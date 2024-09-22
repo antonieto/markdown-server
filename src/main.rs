@@ -1,3 +1,5 @@
+use server::playground::start;
+
 fn main() {
-    println!("Hello, world!");
+    let _ = start();
 }
