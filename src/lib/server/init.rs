@@ -13,8 +13,9 @@ pub async fn hello(_: Request<hyper::body::Incoming>) -> Result<Response<Full<By
     Ok(Response::new(Full::new(Bytes::from("Hello, world"))))
 }
 
+// Init function -- server entry point
 #[tokio::main]
-pub async fn start() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+pub async fn start_server() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
     let addr = SocketAddr::from(([127, 0, 0, 1], 3001));
 
     let listener = TcpListener::bind(addr).await?;
@@ -29,7 +30,7 @@ pub async fn start() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
                 .serve_connection(io, service_fn(hello))
                 .await
             {
-                eprintln!("Error servinc connection {:?}", err);
+                eprintln!("Error serving connection {:?}", err);
             }
         });
     }

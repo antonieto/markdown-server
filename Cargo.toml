@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "server"
+name = "lib"
 test = false
-path = "src/server/mod.rs"
+path = "src/lib/mod.rs"
 
 [dependencies]
 hyper = "1.4.1"
