@@ -1,13 +1,15 @@
-use std::future::Future;
-
 use http_body_util::Empty;
 use hyper::body::Bytes;
 use hyper::Request;
 use hyper_util::rt::TokioIo;
 use tokio::net::TcpStream;
 
-#[tokio::main]
+pub async fn some_async() -> Result<String, String> {
+    Ok(String::from("Did work"))
+}
+
 pub async fn tokio_main() -> Result<(), Box<dyn std::error::Error + Send + Sync>> {
+    println!("Fetching data");
     // Parse our URL...
     let url = "http://httpbin.org/ip".parse::<hyper::Uri>()?;
 
@@ -44,27 +46,9 @@ pub async fn tokio_main() -> Result<(), Box<dyn std::error::Error + Send + Sync>
         .body(Empty::<Bytes>::new())?;
 
     // Await the response...
-    let mut res = sender.send_request(req).await?;
+    let res = sender.send_request(req).await?;
 
     println!("status: {}", res.status());
 
-    let instance = SomeAsyncStruct {};
-
-    let val = instance.await;
-
-    println!("{}", val);
-
     Ok(())
-}
-
-struct SomeAsyncStruct {}
-
-impl Future for SomeAsyncStruct {
-    type Output = String;
-    fn poll(
-        self: std::pin::Pin<&mut Self>,
-        cx: &mut std::task::Context<'_>,
-    ) -> std::task::Poll<Self::Output> {
-        std::task::Poll::Ready(String::from("Value is ready"))
-    }
 }
