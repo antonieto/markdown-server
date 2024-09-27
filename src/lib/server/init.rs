@@ -2,33 +2,36 @@ use http_body_util::Full;
 use hyper::body::Bytes;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
-use hyper::{Request, Response, StatusCode};
+use hyper::{Error, Request, Response, StatusCode};
 use hyper_util::rt::TokioIo;
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
-use crate::gitreader::RepoHandle;
+use crate::gitreader::{
+    github_client::{Github, GithubClient},
+    RepoHandle,
+};
 
 // Rotues requests
 async fn route_service(
     req: Request<hyper::body::Incoming>,
 ) -> Result<Response<Full<Bytes>>, Infallible> {
-    let handle = match RepoHandle::from_uri(req.uri().path()) {
-        Ok(h) => h,
-        Err(e) => {
-            let body = Full::new(Bytes::from(e));
-            let res = Response::builder()
-                .status(StatusCode::BAD_REQUEST)
-                .body(body)
-                .unwrap();
-            return Ok(res);
+    let handle = RepoHandle::from_uri(req.uri().path()).unwrap();
+
+    let gh_client = GithubClient::new();
+
+    match gh_client.get_tree(handle.clone()).await {
+        Ok(tree) => {
+            println!("SHA: {}", tree.sha);
         }
-    };
+        Err(e) => {
+            eprint!("{}", e.to_string());
+        }
+    }
 
     Ok(Response::new(Full::new(Bytes::from(format!(
-        "Owner: {} \nName: {}",
-        handle.owner, handle.name
+        "Not working yet"
     )))))
 }
 

@@ -1,6 +1,7 @@
+pub mod github_client;
 pub mod gitreader;
-pub mod http_client;
 
+#[derive(Clone)]
 pub struct RepoHandle {
     pub owner: String,
     pub name: String,
@@ -8,6 +9,7 @@ pub struct RepoHandle {
 
 impl RepoHandle {
     pub fn from_uri(uri: &str) -> Result<RepoHandle, String> {
+        println!("URI: {}", uri);
         let mut iterator = uri.split("/").skip(1);
 
         let owner: String = if let Some(i) = iterator.next() {
