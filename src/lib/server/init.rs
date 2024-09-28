@@ -2,7 +2,7 @@ use http_body_util::Full;
 use hyper::body::Bytes;
 use hyper::server::conn::http1;
 use hyper::service::service_fn;
-use hyper::{Error, Request, Response, StatusCode};
+use hyper::{Request, Response};
 use hyper_util::rt::TokioIo;
 use std::convert::Infallible;
 use std::net::SocketAddr;
@@ -13,7 +13,7 @@ use crate::gitreader::{
     RepoHandle,
 };
 
-// Rotues requests
+// Routes requests
 async fn route_service(
     req: Request<hyper::body::Incoming>,
 ) -> Result<Response<Full<Bytes>>, Infallible> {
@@ -29,6 +29,9 @@ async fn route_service(
             eprint!("{}", e.to_string());
         }
     }
+
+    // TODO: Add rendered html to this response
+    Response::builder().header("Content-Type", "text/html");
 
     Ok(Response::new(Full::new(Bytes::from(format!(
         "Not working yet"

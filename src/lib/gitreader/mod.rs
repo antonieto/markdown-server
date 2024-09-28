@@ -5,6 +5,7 @@ pub mod gitreader;
 pub struct RepoHandle {
     pub owner: String,
     pub name: String,
+    pub branch: Option<String>
 }
 
 impl RepoHandle {
@@ -24,6 +25,6 @@ impl RepoHandle {
             return Err(String::from("URI is missing repository name"));
         };
 
-        Ok(RepoHandle { owner, name })
+        Ok(RepoHandle { owner, name, branch: Some(String::from("main")) })
     }
 }
