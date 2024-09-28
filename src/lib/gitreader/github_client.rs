@@ -65,7 +65,10 @@ impl Github for GithubClient {
 
         let text = res.text().await?;
 
-        let tree: GetTreeResponse = serde_json::from_str(text.as_str())?;
+        let mut tree: GetTreeResponse = serde_json::from_str(text.as_str())?;
+
+        // Sort here
+        tree.tree.sort_by(|a, b| { a.path.len().cmp(&b.path.len()) });
 
         return Ok(tree);
     }

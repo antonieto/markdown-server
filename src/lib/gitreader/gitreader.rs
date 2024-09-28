@@ -3,10 +3,9 @@
 
 use std::collections::HashMap;
 
-use super::github_client::TreeItem;
+use serde::Serialize;
 
-// Utility for constructing tree
-struct Tree {}
+use super::github_client::TreeItem;
 
 // A handle to a github repo, exposing methods used to fetch contents of a file and stuff
 // c is the lifetime of tokio http
@@ -22,11 +21,12 @@ impl GitReader {}
 
 // TODO: implement tree read
 #[allow(dead_code)]
+#[derive(Serialize)]
 pub struct FileNode {
-    node_type: FileType,
-    name: String,
-    full_path: String,
-    children: HashMap<String, FileNode>,
+    pub node_type: FileType,
+    pub name: String,
+    pub full_path: String,
+    pub children: HashMap<String, FileNode>,
 }
 
 impl FileNode {
@@ -40,7 +40,7 @@ impl FileNode {
     }
 }
 
-#[derive(Debug, Clone, Copy)]
+#[derive(Debug, Clone, Copy, Serialize)]
 pub enum FileType {
     DIR,
     FILE,
@@ -52,12 +52,12 @@ pub enum ApiError {
 
 // TODO: Add tests
 // Builds a tree of files from a list of TreeItem from a
-pub fn build_tree(items: &mut Vec<TreeItem>) -> FileNode {
+pub fn build_tree(items: &Vec<TreeItem>) -> FileNode {
     // Empty name for root directory
     let mut root = FileNode::new(String::new(), FileType::DIR);
 
     // Sort - shorter paths are closer to root
-    items.sort_by(|a, b| a.path.len().cmp(&b.path.len()));
+    // items.sort_by(|a, b| a.path.len().cmp(&b.path.len()));
 
     for item in items {
         let split: Vec<&str> = item.path.split("/").into_iter().collect();
@@ -75,6 +75,7 @@ pub fn build_tree(items: &mut Vec<TreeItem>) -> FileNode {
         );
     }
 
+    println!("Successfully built tree");
     root
 }
 
@@ -112,9 +113,4 @@ fn add_to_tree<'r>(
         // This should never happen if the insertion was successful
         None
     }
-}
-
-// Splits paths
-fn split_path(uri: &str) -> Vec<&str> {
-    uri.split("/").filter(|x| !x.is_empty()).collect()
 }

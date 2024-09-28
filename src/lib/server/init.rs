@@ -4,10 +4,12 @@ use hyper::server::conn::http1;
 use hyper::service::service_fn;
 use hyper::{Request, Response};
 use hyper_util::rt::TokioIo;
+use serde::Serialize;
 use std::convert::Infallible;
 use std::net::SocketAddr;
 use tokio::net::TcpListener;
 
+use crate::gitreader::gitreader::{build_tree, FileNode};
 use crate::gitreader::{
     github_client::{Github, GithubClient},
     RepoHandle,
@@ -21,9 +23,14 @@ async fn route_service(
 
     let gh_client = GithubClient::new();
 
-    match gh_client.get_tree(handle.clone()).await {
-        Ok(tree) => {
-            println!("SHA: {}", tree.sha);
+    match &gh_client.get_tree(handle.clone()).await {
+        Ok(res) => {
+            let constructed_tree = build_tree(&res.tree);
+
+            let serialized = serde_json::to_string_pretty(&constructed_tree).unwrap();
+           
+
+            println!("Built tree: {}", serialized);
         }
         Err(e) => {
             eprint!("{}", e.to_string());
@@ -31,7 +38,7 @@ async fn route_service(
     }
 
     // TODO: Add rendered html to this response
-    Response::builder().header("Content-Type", "text/html");
+    let _ = Response::builder().header("Content-Type", "text/html");
 
     Ok(Response::new(Full::new(Bytes::from(format!(
         "Not working yet"
