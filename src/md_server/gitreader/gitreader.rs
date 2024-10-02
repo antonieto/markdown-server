@@ -30,12 +30,12 @@ pub struct FileNode {
 }
 
 impl FileNode {
-    pub fn new(name: String, n_type: FileType) -> FileNode {
+    pub fn new(name: String, n_type: FileType, full_path: Option<String>) -> FileNode {
         Self {
             node_type: n_type,
             children: HashMap::new(),
             name,
-            full_path: String::new(),
+            full_path: full_path.unwrap_or(String::new()),
         }
     }
 }
@@ -54,7 +54,7 @@ pub enum ApiError {
 // Builds a tree of files from a list of TreeItem from a
 pub fn build_tree(items: &Vec<TreeItem>) -> FileNode {
     // Empty name for root directory
-    let mut root = FileNode::new(String::new(), FileType::DIR);
+    let mut root = FileNode::new(String::new(), FileType::DIR, None);
 
     // Sort - shorter paths are closer to root
     // items.sort_by(|a, b| a.path.len().cmp(&b.path.len()));
@@ -71,11 +71,10 @@ pub fn build_tree(items: &Vec<TreeItem>) -> FileNode {
         add_to_tree(
             &mut root,
             split.clone().as_slice(),
-            FileNode::new(item.path.clone(), n_type),
+            FileNode::new(item.path.clone(), n_type, Some(item.path.clone())),
         );
     }
 
-    println!("Successfully built tree");
     root
 }
 
@@ -102,7 +101,13 @@ fn add_to_tree<'r>(
         } else {
             FileType::FILE
         };
-        FileNode::new(String::from(first), n_type)
+
+        // would be convenient to add a real full_path
+        FileNode::new(
+            String::from(first),
+            n_type,
+            Some(node_to_add.full_path.clone()),
+        )
     });
 
     // Now that we've ensured the node exists, we can safely get a mutable reference

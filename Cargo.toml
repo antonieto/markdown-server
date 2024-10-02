@@ -4,9 +4,9 @@ version = "0.1.0"
 edition = "2021"
 
 [lib]
-name = "lib"
+name = "md_server"
 test = false
-path = "src/lib/mod.rs"
+path = "src/md_server/mod.rs"
 
 [dependencies]
 hyper = "1.4.1"
@@ -17,3 +17,5 @@ serde_json = "1.0"
 serde = { version = "1.0", features = ["derive"] }
 hyper-tls = "0.5"
 reqwest = { version = "0.12", features = ["json"] }
+rustdown = { git = "https://github.com/antonieto/rustmd", branch = "master" }
+base64 = "0.22.1"

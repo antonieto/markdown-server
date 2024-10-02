@@ -49,6 +49,38 @@ pub trait Github {
         &self,
         handle: RepoHandle,
     ) -> Result<GetTreeResponse, Box<dyn std::error::Error>>;
+
+    #[allow(async_fn_in_trait)]
+    async fn get_file_content(
+        &self,
+        handle: &RepoHandle,
+        path: String,
+    ) -> Result<GetFileContentResponse, Box<dyn std::error::Error>>;
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct GetFileContentResponse {
+    pub name: String,
+    pub path: String,
+    pub sha: String,
+    pub size: u32,
+    pub url: String,
+    pub html_url: String,
+    pub git_url: String,
+    pub download_url: String,
+    #[serde(rename = "type")]
+    pub _type: String,
+    pub content: String,
+    pub encoding: String,
+    pub _links: FileLinks,
+}
+
+#[derive(Serialize, Deserialize)]
+pub struct FileLinks {
+    #[serde(rename = "self")]
+    pub _self: String,
+    pub git: String,
+    pub html: String,
 }
 
 impl Github for GithubClient {
@@ -56,6 +88,7 @@ impl Github for GithubClient {
         &self,
         handle: RepoHandle,
     ) -> Result<GetTreeResponse, Box<dyn std::error::Error>> {
+        // TODO: either include branch in route or
         let url = format!(
             "{}/repos/{}/{}/git/trees/main?recursive=1",
             self.base_url, handle.owner, handle.name
@@ -68,8 +101,27 @@ impl Github for GithubClient {
         let mut tree: GetTreeResponse = serde_json::from_str(text.as_str())?;
 
         // Sort here
-        tree.tree.sort_by(|a, b| { a.path.len().cmp(&b.path.len()) });
+        tree.tree.sort_by(|a, b| a.path.len().cmp(&b.path.len()));
 
         return Ok(tree);
+    }
+
+    async fn get_file_content(
+        &self,
+        handle: &RepoHandle,
+        path: String,
+    ) -> Result<GetFileContentResponse, Box<dyn std::error::Error>> {
+        let url = format!(
+            "{}/repos/{}/{}/contents/{}",
+            self.base_url, handle.owner, handle.name, path
+        );
+
+        let res = self.client.get(url).send().await?;
+
+        let text = res.text().await?;
+
+        let content: GetFileContentResponse = serde_json::from_str(text.as_str())?;
+
+        Ok(content)
     }
 }

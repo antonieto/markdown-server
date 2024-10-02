@@ -10,7 +10,6 @@ pub struct RepoHandle {
 
 impl RepoHandle {
     pub fn from_uri(uri: &str) -> Result<RepoHandle, String> {
-        println!("URI: {}", uri);
         let mut iterator = uri.split("/").skip(1);
 
         let owner: String = if let Some(i) = iterator.next() {
@@ -28,3 +27,4 @@ impl RepoHandle {
         Ok(RepoHandle { owner, name, branch: Some(String::from("main")) })
     }
 }
+
